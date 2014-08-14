@@ -1,0 +1,226 @@
+<!DOCTYPE HTML>
+<html xmlns="http://www.w3.org/1999/xhtml"
+       xmlns:ui="http://java.sun.com/jsf/facelets"
+       xmlns:h="http://java.sun.com/jsf/html"
+       xmlns:f="http://java.sun.com/jsf/core">
+
+<ui:composition template="/WEB-INF/templates/bootstrap-fluid.xhtml">
+
+<ui:define name="container">
+
+
+<div class="row">
+  <div class="col-md-12 text-center">
+  	<br />
+  	<img src="img/tlicon32x32.png" />
+  	<br />
+  	<h2>reex2014<small><br />a Rule Engine EXercise for 2014</small></h2>
+  </div>
+</div>
+
+<br />
+
+<div class="row">
+	<div class="col-md-3"></div>
+	<div class="col-md-6 text-center">
+
+<p>
+You can find details of the Rule Engine running below; if you are looking for an explanation of the system, rationale and further information, head to the <a href="about.xhtml">about page</a>.
+</p>
+
+</div>
+<div class="col-md-3"></div>
+</div> <!-- /row -->
+
+
+
+<div class="row">
+	<div class="col-md-3"></div>
+	<div class="col-md-6 text-center chev" >
+		<br />
+		<a href="#cogitoergosum" ><span class="glyphicon glyphicon-chevron-down" ></span></a>
+	</div>
+	<div class="col-md-3"></div>
+</div> <!-- /row -->
+
+
+
+<div class="row">
+	<div class="col-md-2"></div>
+	<div class="col-md-8"><hr /></div>
+	<div class="col-md-2"></div>
+</div> <!-- /row -->
+
+
+
+<div class="row">
+	<div class="col-md-3"><section id="cogitoergosum"></section></div>
+	<div class="col-md-6" >
+<blockquote>
+  <p>#{engineAPIBean.query("cogitoergosum")[0]["$text"]}</p>
+  <footer>Last RSS <h:outputText value="#{engineAPIBean.convertTime(engineAPIBean.query('cogitoergosum')[0]['$cogito']['lastRssTs'])}">
+			        <f:convertDateTime timeStyle="full" dateStyle="medium" type="both" timeZone="Europe/Rome" /> <!-- in this case timeZone is hardcoded because the project takes data relevant for Milan, Italy, but otherwise could reference a managed Bean -->
+			    </h:outputText>
+  </footer>
+  <footer>Last tweet <h:outputText value="#{engineAPIBean.convertTime(engineAPIBean.query('cogitoergosum')[0]['$cogito']['lastTweetTs'])}">
+			        <f:convertDateTime timeStyle="full" dateStyle="medium" type="both" timeZone="Europe/Rome" />
+			    </h:outputText>
+  </footer>
+</blockquote>
+<p class="text-center"><small>The above represent a summary of the <em>last</em> knowledge produced by the Rule Engine.<br />It also display the timestamp of the last information incoming from the RSS and Twitter streams.</small></p>
+  </div>
+	<div class="col-md-3"></div>
+</div> <!-- /row -->
+
+
+<div class="row">
+	<div class="col-md-3"></div>
+	<div class="col-md-6 text-center chev" >
+		<br />
+		<a href="#Alerts" ><span class="glyphicon glyphicon-chevron-down" ></span></a>
+	</div>
+	<div class="col-md-3"></div>
+</div> <!-- /row -->
+
+<div class="row">
+	<div class="col-md-2"></div>
+	<div class="col-md-8"><hr /></div>
+	<div class="col-md-2"></div>
+</div> <!-- /row -->
+
+
+<div class="row">
+	<div class="col-md-3"><section id="Alerts"></section></div>
+	<div class="col-md-6" >
+	<p class="text-center"><small>Below is the list of Alerts, warnings and info, produced as knowledge by the Rule Engine.</small></p>
+	
+		<div class="panel-group" id="accordion">
+		<ui:repeat var="alert" value="#{engineAPIBean.listAlerts()}" varStatus="alertStatus">
+<!-- We got to choose if Alert for SyndEntry or (twitter) Status or ... -->
+
+<!-- #{alert.TSimpleClassName} #{alert} -->
+
+<ui:fragment rendered="#{alert.TSimpleClassName eq 'StatusJSONImpl'}">
+  <div class="panel panel-#{(alert.type eq 'INFO') ? 'info' : 'danger'}">
+    <div class="panel-heading">
+      <h4 class="panel-title">
+        <a data-toggle="collapse" data-parent="#accordion" href="#collapse#{alertStatus.index}">
+			#{alert.condition}
+        </a>
+      </h4>
+    </div>
+    <div id="collapse#{alertStatus.index}" class="panel-collapse collapse #{alertStatus.first ? 'in' : ''}"> <!-- Smart way of using the varStatus pojo =) -->
+      <div class="panel-body">
+      	<small class="pull-right">
+			<h:outputText value="#{alert.ts}">
+	       		<f:convertDateTime timeStyle="full" dateStyle="medium" type="both" timeZone="Europe/Rome" /> <!-- in this case timeZone is hardcoded because the project takes data relevant for Milan, Italy, but otherwise could reference a managed Bean -->
+   	    	</h:outputText> 
+		</small>
+		<strong>Tweet</strong><br />
+		#{alert.ref.text} <small><a href="http://twitter.com/#{tweet.user.name}/status/#{tweet.id}"><span class="glyphicon glyphicon-new-window"></span></a></small>
+      </div>
+    </div>
+  </div>
+</ui:fragment>
+
+<ui:fragment rendered="#{alert.TSimpleClassName eq 'Status[]'}">
+  <div class="panel panel-#{(alert.type eq 'INFO') ? 'info' : 'danger'}">
+    <div class="panel-heading">
+      <h4 class="panel-title">
+        <a data-toggle="collapse" data-parent="#accordion" href="#collapse#{alertStatus.index}">
+			#{alert.condition}
+        </a>
+      </h4>
+    </div>
+    <div id="collapse#{alertStatus.index}" class="panel-collapse collapse #{alertStatus.first ? 'in' : ''}"> <!-- Smart way of using the varStatus pojo =) -->
+      <div class="panel-body">
+      	<small class="pull-right">
+			<h:outputText value="#{alert.ts}">
+	       		<f:convertDateTime timeStyle="full" dateStyle="medium" type="both" timeZone="Europe/Rome" /> <!-- in this case timeZone is hardcoded because the project takes data relevant for Milan, Italy, but otherwise could reference a managed Bean -->
+   	    	</h:outputText> 
+		</small>
+		<strong>Multiple tweets</strong>
+		<ul>
+		<ui:repeat var="tweet" value="#{alert.ref}" varStatus="tweetStatus">
+			<li>#{tweet.text} <small><a href="http://twitter.com/#{tweet.user.name}/status/#{tweet.id}"><span class="glyphicon glyphicon-new-window"></span></a></small></li>
+		</ui:repeat>
+		</ul>
+      </div>
+    </div>
+  </div>
+</ui:fragment>
+
+<ui:fragment rendered="#{alert.TSimpleClassName eq 'SyndEntryImpl'}">
+  <div class="panel panel-#{(alert.type eq 'INFO') ? 'info' : 'danger'}">
+    <div class="panel-heading">
+      <h4 class="panel-title">
+        <a data-toggle="collapse" data-parent="#accordion" href="#collapse#{alertStatus.index}">
+			#{alert.condition}
+        </a>
+      </h4>
+    </div>
+    <div id="collapse#{alertStatus.index}" class="panel-collapse collapse #{alertStatus.first ? 'in' : ''}"> <!-- Smart way of using the varStatus pojo =) -->
+      <div class="panel-body">
+      			<small class="pull-right">
+			<h:outputText value="#{alert.ts}">
+	       		<f:convertDateTime timeStyle="full" dateStyle="medium" type="both" timeZone="Europe/Rome" /> <!-- in this case timeZone is hardcoded because the project takes data relevant for Milan, Italy, but otherwise could reference a managed Bean -->
+   	    	</h:outputText> 
+			</small>
+        <strong>#{alert.ref.title}</strong>
+        <br />
+        <a href="#{alert.ref.link}">Link</a>
+        <br />
+        <small>#{alert.ref.description.value}</small>
+      </div>
+    </div>
+  </div>
+</ui:fragment>
+		
+		</ui:repeat>
+		</div>
+	</div>
+	<div class="col-md-3"></div>
+</div> <!-- /row -->
+
+
+<div class="row">
+	<div class="col-md-3"></div>
+	<div class="col-md-6 text-center chev" >
+		<br />
+		<a href="#diagnostics" ><span class="glyphicon glyphicon-chevron-down" ></span></a>
+	</div>
+	<div class="col-md-3"></div>
+</div> <!-- /row -->
+<div class="row">
+	<div class="col-md-2"></div>
+	<div class="col-md-8"><hr /></div>
+	<div class="col-md-2"></div>
+</div> <!-- /row -->
+
+
+<div class="row">
+	<div class="col-md-3"><section id="diagnostics"></section></div>
+	<div class="col-md-6 chev" >
+	<p class="text-center"><small>Some metrics of the number of facts (information) inside the working memory of the Rule Engine, for simple diagnostics.</small></p>
+	<table class="table table-condensed">
+<tr>
+	<th>Class <small>(type of Object)</small></th>
+	<th>Instances <small>(count)</small></th>
+</tr>
+<ui:repeat value="#{engineAPIBean.groupByClassAndCount().entrySet().toArray()}" var="entry">
+<tr>
+	<td><h:outputText value="#{entry.key}" styleClass="word-break-all"/></td>
+	<td><h:outputText value="#{entry.value}"/></td>
+</tr>
+</ui:repeat>
+</table>
+	</div>
+	<div class="col-md-3"></div>
+</div>
+
+
+</ui:define>
+
+</ui:composition>
+
+</html>
