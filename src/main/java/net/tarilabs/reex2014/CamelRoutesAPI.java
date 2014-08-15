@@ -11,6 +11,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import javax.annotation.Resource;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.faces.bean.ManagedBean;
@@ -29,7 +30,17 @@ import org.slf4j.LoggerFactory;
 public class CamelRoutesAPI {
 	final static Logger LOG = LoggerFactory.getLogger(CamelRoutesAPI.class);
 
-	protected static final String RULE_ENGINE_JNDI = "java:global/reex2014/"+PseudoRealtimeRuleEngine.class.getSimpleName();
+	// I've tried java:app and java:module JNDI but doesn't cope well with Camel ejb: component. So this solution works:
+	
+	@Resource(lookup="java:app/AppName")
+	private String appName;
+	
+	private String getRuleEngineJNDI() {
+		return "java:global/"
+				+ appName
+				+ "/"
+				+ PseudoRealtimeRuleEngine.class.getSimpleName();
+	}
 	
 	@EJB
 	private CamelBootstrap cb;
@@ -54,7 +65,7 @@ public class CamelRoutesAPI {
 						+ ((feedURL.contains("?")) ? "&" : "?")
 						+ "splitEntries=true&throttleEntries=false&filter=true&consumer.delay=3600000")
 					.log("insert a RSS")
-					.to("ejb:" + RULE_ENGINE_JNDI + "?method=insert")
+					.to("ejb:" + getRuleEngineJNDI() + "?method=insert")
 					;
 			}
 		});
@@ -74,7 +85,7 @@ public class CamelRoutesAPI {
 						+ "&accessToken=" + accessToken
 						+ "&accessTokenSecret=" + accessTokenSecret)
 					.log("insert a Tweet ${body.getClass()} - ${body}")
-					.to("ejb:" + RULE_ENGINE_JNDI + "?method=insert")
+					.to("ejb:" + getRuleEngineJNDI() + "?method=insert")
 					;
 			}
 		});
