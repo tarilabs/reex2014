@@ -46,7 +46,8 @@ import org.slf4j.LoggerFactory;
 public class PseudoRealtimeRuleEngine {
 	private static final int MAX_RULES_THRESHOLD= 1000;
 
-	static Logger LOG = LoggerFactory.getLogger(PseudoRealtimeRuleEngine.class);
+	final static Logger LOG = LoggerFactory.getLogger(PseudoRealtimeRuleEngine.class);
+	final static Logger RE_LOG = LoggerFactory.getLogger("ruleengine");
 
 	private KieBase kieBase;
 	private KieSession kieSession;
@@ -71,6 +72,9 @@ public class PseudoRealtimeRuleEngine {
         KieSessionConfiguration config = kieServices.newKieSessionConfiguration();
 		config.setOption( ClockTypeOption.get("pseudo") );
         kieSession = kieBase.newKieSession(config, null);
+        
+        LOG.info("Pupulating globals");
+        kieSession.setGlobal("LOG", RE_LOG);
         
         sessionClock = kieSession.getSessionClock();
         LOG.info("init() sessionClock: {}", sessionClock.getCurrentTime());
