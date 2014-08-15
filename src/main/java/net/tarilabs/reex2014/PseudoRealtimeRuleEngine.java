@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.annotation.PostConstruct;
@@ -12,6 +13,7 @@ import javax.annotation.PreDestroy;
 import javax.ejb.Singleton;
 import javax.ejb.Startup;
 
+import org.drools.core.time.SessionPseudoClock;
 import org.kie.api.KieBase;
 import org.kie.api.KieBaseConfiguration;
 import org.kie.api.KieServices;
@@ -23,25 +25,33 @@ import org.kie.api.runtime.KieContainer;
 import org.kie.api.runtime.KieSession;
 import org.kie.api.runtime.KieSessionConfiguration;
 import org.kie.api.runtime.ObjectFilter;
+import org.kie.api.runtime.conf.ClockTypeOption;
 import org.kie.api.runtime.rule.QueryResults;
 import org.kie.api.runtime.rule.QueryResultsRow;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Rememebr by default it would be accessed NOT concurrently, which is better.
- * @author mmortari
+ * 1- find a better name
+ * 2- either move to JavaEE 7 so thread management is better supported
+ * 3- either move to kie-server
+ * 
+ * what is happening is that SE's style thread management inside EJB not working out super-good, so I prefer to move to a "pseudo"realtime clock, where the pseudo clock is advanced to the real world clock, prior each new fact/event is being inserted. Anyway for the scope of the application this is OK.
+ * 
+ * Rememebr by default it would be accessed NOT concurrently, which is better for this scenario
  *
  */
 @Singleton
 @Startup
-public class RealtimeRuleEngine {
-	static Logger LOG = LoggerFactory.getLogger(RealtimeRuleEngine.class);
+public class PseudoRealtimeRuleEngine {
+	private static final int MAX_RULES_THRESHOLD= 1000;
+
+	static Logger LOG = LoggerFactory.getLogger(PseudoRealtimeRuleEngine.class);
 
 	private KieBase kieBase;
 	private KieSession kieSession;
 
-	private Thread st;
+	private SessionPseudoClock sessionClock;
 
 	@PostConstruct
 	public void init() {
@@ -59,24 +69,34 @@ public class RealtimeRuleEngine {
         
         LOG.info("Creating kieSession");
         KieSessionConfiguration config = kieServices.newKieSessionConfiguration();
+		config.setOption( ClockTypeOption.get("pseudo") );
         kieSession = kieBase.newKieSession(config, null);
         
-        // TODO this on JavaEE 7 can be done much differently.
-        st = new Thread() { 
-            @Override
-            public void run() {
-            	kieSession.fireUntilHalt();
-            }
-        };
-        st.start();
+        sessionClock = kieSession.getSessionClock();
+        LOG.info("init() sessionClock: {}", sessionClock.getCurrentTime());
+        
+        final long nowMS = System.currentTimeMillis();
+        sessionClock.advanceTime(nowMS, TimeUnit.MILLISECONDS);
+        LOG.info("init() sessionClock advanced, sessionClock: {}", sessionClock.getCurrentTime());
+        
+        kieSession.fireAllRules(MAX_RULES_THRESHOLD);
+        LOG.info("init() onetime fireAllRules");
         
         LOG.info("init() end.");
 	}
 	
 	public void insert(Object arg1) {
 		LOG.info("insert() {}", arg1.getClass()); 
-		LOG.debug("insert() {}", arg1);
+		final long nowMS = System.currentTimeMillis();
+		final long ksMS = sessionClock.getCurrentTime();
+		final long diff = nowMS - ksMS;
+		LOG.info("insert() advance of {}", diff);
+		sessionClock.advanceTime(diff, TimeUnit.MILLISECONDS);
+		LOG.debug("insert() insert {}", arg1);
 		kieSession.insert(arg1);
+		LOG.info("init() fileAllRules");
+		kieSession.fireAllRules(MAX_RULES_THRESHOLD);
+        
 		LOG.info("insert() {} end.", arg1.getClass());
 	}
 	

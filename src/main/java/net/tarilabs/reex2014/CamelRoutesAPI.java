@@ -19,6 +19,8 @@ import org.slf4j.LoggerFactory;
 @Stateless
 public class CamelRoutesAPI {
 	final static Logger LOG = LoggerFactory.getLogger(CamelRoutesAPI.class);
+
+	protected static final String RULE_ENGINE_JNDI = "java:global/reex2014/"+PseudoRealtimeRuleEngine.class.getSimpleName();
 	
 	@EJB
 	private CamelBootstrap cb;
@@ -33,7 +35,7 @@ public class CamelRoutesAPI {
 			public void configure() throws Exception {
 				from("rss:"+param+"?splitEntries=true&throttleEntries=false&filter=true&consumer.delay=3600000")
 					.log("insert a RSS")
-					.to("ejb:java:global/reex2014/RealtimeRuleEngine?method=insert")
+					.to("ejb:" + RULE_ENGINE_JNDI + "?method=insert")
 					;
 			}
 		});

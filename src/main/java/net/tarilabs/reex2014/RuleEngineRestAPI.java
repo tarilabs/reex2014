@@ -23,9 +23,9 @@ import twitter4j.json.DataObjectFactory;
 @RequestScoped
 @Stateless
 @Path("ruleengine")
-public class RealtimeRuleEngineRestAPI {
+public class RuleEngineRestAPI {
 	@EJB
-	private RealtimeRuleEngine engine;
+	private PseudoRealtimeRuleEngine engine;
 	
 	private String dummyTweetText;
 
