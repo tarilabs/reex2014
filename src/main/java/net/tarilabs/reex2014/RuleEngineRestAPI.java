@@ -1,5 +1,6 @@
 package net.tarilabs.reex2014;
 
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -48,7 +49,9 @@ public class RuleEngineRestAPI {
 	}
 	
 	public List<Alert<?>> listAlerts() {
-		return engine.listAlerts();
+		List<Alert<?>> listAlerts = engine.listAlerts();
+		Collections.sort(listAlerts, new AlertTsDescComparator());
+		return listAlerts;
 	}
 	
 	public Map<String, AtomicInteger> groupByClassAndCount() {
