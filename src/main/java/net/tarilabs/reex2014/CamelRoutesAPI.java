@@ -46,11 +46,13 @@ public class CamelRoutesAPI {
 	
 	public void addRssRoute(String rssUrl) throws Exception {
 		LOG.info("addRssRoute() {}", rssUrl);
-		final String param = rssUrl;
+		final String feedURL = rssUrl;
 		cb.getCamelContext().addRoutes(new RouteBuilder() {
 			@Override
 			public void configure() throws Exception {
-				from("rss:"+param+"?splitEntries=true&throttleEntries=false&filter=true&consumer.delay=3600000")
+				from("rss:" + feedURL 
+						+ ((feedURL.contains("?")) ? "&" : "?")
+						+ "splitEntries=true&throttleEntries=false&filter=true&consumer.delay=3600000")
 					.log("insert a RSS")
 					.to("ejb:" + RULE_ENGINE_JNDI + "?method=insert")
 					;
