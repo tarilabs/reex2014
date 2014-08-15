@@ -25,7 +25,15 @@ public class CamelRoutesAPI {
 	@EJB
 	private CamelBootstrap cb;
 	
+	// EJB POJO for rss route build 
 	private String rssUrl;
+	
+	// EJB POJO for twitter route build
+	private String consumerKey;
+	private String consumerSecret;
+	private String accessToken;
+	private String accessTokenSecret;
+	private String twitterUsername;
 	
 	public void addRssRoute(String rssUrl) throws Exception {
 		LOG.info("addRssRoute() {}", rssUrl);
@@ -35,6 +43,26 @@ public class CamelRoutesAPI {
 			public void configure() throws Exception {
 				from("rss:"+param+"?splitEntries=true&throttleEntries=false&filter=true&consumer.delay=3600000")
 					.log("insert a RSS")
+					.to("ejb:" + RULE_ENGINE_JNDI + "?method=insert")
+					;
+			}
+		});
+	}
+	
+	public void addTwitterRoute(String twitterUsername) throws Exception {
+		LOG.info("addTwitterRoute() {}", twitterUsername);
+		final String twUser = twitterUsername;
+		cb.getCamelContext().addRoutes(new RouteBuilder() {
+			@Override
+			public void configure() throws Exception {
+				from("twitter://timeline/user?user="
+						+ twUser
+						+ "&type=polling&delay=60"
+						+ "&consumerKey=" + consumerKey
+						+ "&consumerSecret=" + consumerSecret
+						+ "&accessToken=" + accessToken
+						+ "&accessTokenSecret=" + accessTokenSecret)
+					.log("insert a Tweet ${body.getClass()} - ${body}")
 					.to("ejb:" + RULE_ENGINE_JNDI + "?method=insert")
 					;
 			}
@@ -58,10 +86,65 @@ public class CamelRoutesAPI {
 		this.rssUrl = rssUrl;
 	}
 	
-	public Object addRss() {
+	public Object addRssRouteCommand() {
 		try {
 			addRssRoute(rssUrl);
 			rssUrl = null;
+		} catch (Exception e) {
+			// TODO put Flash message with error
+			e.printStackTrace();
+		}
+		return "index";
+	}
+
+	public String getConsumerKey() {
+		return consumerKey;
+	}
+
+	public void setConsumerKey(String consumerKey) {
+		this.consumerKey = consumerKey;
+	}
+
+	public String getConsumerSecret() {
+		return consumerSecret;
+	}
+
+	public void setConsumerSecret(String consumerSecret) {
+		this.consumerSecret = consumerSecret;
+	}
+
+	public String getAccessToken() {
+		return accessToken;
+	}
+
+	public void setAccessToken(String accessToken) {
+		this.accessToken = accessToken;
+	}
+
+	public String getAccessTokenSecret() {
+		return accessTokenSecret;
+	}
+
+	public void setAccessTokenSecret(String accessTokenSecret) {
+		this.accessTokenSecret = accessTokenSecret;
+	}
+	
+	public String getTwitterUsername() {
+		return twitterUsername;
+	}
+
+	public void setTwitterUsername(String twitterUsername) {
+		this.twitterUsername = twitterUsername;
+	}
+
+	public String addTwitterRouteCommand() {
+		try {
+			addTwitterRoute(twitterUsername);
+			consumerKey = null;
+			consumerSecret = null;
+			accessToken = null;
+			accessTokenSecret = null;
+			twitterUsername = null;
 		} catch (Exception e) {
 			// TODO put Flash message with error
 			e.printStackTrace();

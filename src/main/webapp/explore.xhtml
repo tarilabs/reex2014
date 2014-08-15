@@ -117,7 +117,7 @@ You can find details of the Rule Engine running below; if you are looking for an
    	    	</h:outputText> 
 		</small>
 		<strong>Tweet</strong><br />
-		#{alert.ref.text} <small><a href="http://twitter.com/#{tweet.user.name}/status/#{tweet.id}"><span class="glyphicon glyphicon-new-window"></span></a></small>
+		#{alert.ref.text} <small><a href="http://twitter.com/#{tweet.user.screenName}/status/#{tweet.id}"><span class="glyphicon glyphicon-new-window"></span></a></small>
       </div>
     </div>
   </div>
@@ -142,7 +142,7 @@ You can find details of the Rule Engine running below; if you are looking for an
 		<strong>Multiple tweets</strong>
 		<ul>
 		<ui:repeat var="tweet" value="#{alert.ref}" varStatus="tweetStatus">
-			<li>#{tweet.text} <small><a href="http://twitter.com/#{tweet.user.name}/status/#{tweet.id}"><span class="glyphicon glyphicon-new-window"></span></a></small></li>
+			<li>#{tweet.text} <small><a href="http://twitter.com/#{tweet.user.screenName}/status/#{tweet.id}"><span class="glyphicon glyphicon-new-window"></span></a></small></li>
 		</ui:repeat>
 		</ul>
       </div>

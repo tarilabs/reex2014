@@ -23,13 +23,23 @@
 		<h3>Add RSS route, provide RSS feed:</h3>
     	<h:form>
     	   <h:inputText value="#{camelRoutesAPI.rssUrl}"></h:inputText>
-    	   <h:commandButton value="Add RSS" action="#{camelRoutesAPI.addRss()}"></h:commandButton>
+    	   <h:commandButton value="Add RSS route" action="#{camelRoutesAPI.addRssRouteCommand()}"></h:commandButton>
     	</h:form>
     	<hr />
     	<h3>Insert a dummy Tweet, provide text:</h3>
     	<h:form>
     	   <h:inputText value="#{engineAPIBean.dummyTweetText}"></h:inputText>
     	   <h:commandButton value="Dummy Tweet it" action="#{engineAPIBean.insertDummyTweet()}"></h:commandButton>
+    	</h:form>
+		<hr />
+		<h3>Add Twitter route, provide keys and twitter-username:</h3>
+    	<h:form>
+    	   Twitter username <h:inputText value="#{camelRoutesAPI.twitterUsername}"></h:inputText><br />
+    	   consumerKey <h:inputText value="#{camelRoutesAPI.consumerKey}"></h:inputText><br />
+    	   consumerSecret <h:inputText value="#{camelRoutesAPI.consumerSecret}"></h:inputText><br />
+    	   accessToken <h:inputText value="#{camelRoutesAPI.accessToken}"></h:inputText><br />
+    	   accessTokenSecret <h:inputText value="#{camelRoutesAPI.accessTokenSecret}"></h:inputText><br />
+    	   <h:commandButton value="Add Twitter ROUTE" action="#{camelRoutesAPI.addTwitterRouteCommand()}"></h:commandButton>
     	</h:form>
     </h:body>
 </html>
